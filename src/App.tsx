@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import './App.css'
 
-import { Board } from './components'
+import type { TBoard, THistory } from './components'
+import { Board, History } from './components'
+import { getEmptyBoard, getWinner } from './components/board.utils'
 
 export default function App() {
-  const [history, setHistory] = useState([Array(9).fill(null)])
+  const [history, setHistory] = useState<THistory>([getEmptyBoard()])
   const [isXNext, setIsXNext] = useState(true)
   const [current, setCurrent] = useState(0)
   const board = history[current]
@@ -13,15 +15,15 @@ export default function App() {
   const onBoardClick = (i: number) => {
     if (board[i] !== null || winner) return
 
-    const newBoard = [...board]
-    newBoard[i] = isXNext ? 'X' : 'O'
+    const newBoard: TBoard = [...board]
+    newBoard[i] = isXNext ? CROSS : ZERO
     setHistory([...history.slice(0, current + 1), newBoard])
     setIsXNext(!isXNext)
     setCurrent(current + 1)
   }
 
   const reset = () => {
-    setHistory([Array(9).fill(null)])
+    setHistory([getEmptyBoard()])
     setCurrent(0)
   }
 
@@ -31,57 +33,33 @@ export default function App() {
   }
 
   return (
-    <main className="flex gap-10">
-      <div>
-        <button
-          className="p-0.5 border rounded-sm border-slate-700"
-          onClick={reset}
-        >
-          Reset
-        </button>
-      </div>
-      <div className="flex flex-col items-center">
-        <h1>
-          {winner ? `Winner: ${winner}` : `Next player: ${isXNext ? 'X' : 'O'}`}
-        </h1>
-        <Board board={board} onClick={onBoardClick} />
-      </div>
-      <div>
-        <h2>History</h2>
-        <ol>
-          {history.map((board, index) => (
-            <li
-              className={`mb-1 border border-green-800 hover:cursor-pointer rounded-sm min-w-3 ${
-                index === current ? 'bg-green-800 bg-opacity-10' : ''
-              }`}
-              key={index}
-              onClick={() => gotoHistory(index)}
-            >
-              {index}
-            </li>
-          ))}
-        </ol>
+    <main className="flex justify-center">
+      <div className="flex mt-[20vh]">
+        <div>
+          <button
+            className="p-2 text-2xl font-bold transition-colors bg-red-100 bg-opacity-50 border rounded-sm hover:bg-red-200 bg border-slate-700"
+            onClick={reset}
+          >
+            Reset
+          </button>
+        </div>
+        <div className="flex flex-col items-center mx-24 text-2xl font-bold min-w-48">
+          <h1 className="mb-10 ">
+            {winner
+              ? `Winner: ${winner}`
+              : `Next player: ${isXNext ? CROSS : ZERO}`}
+          </h1>
+          <Board board={board} onClick={onBoardClick} />
+        </div>
+
+        <div>
+          <h2 className="mb-5 text-2xl font-bold">History</h2>
+          <History history={history} onClick={gotoHistory} current={current} />
+        </div>
       </div>
     </main>
   )
 }
 
-const getWinner = (board: string[]) => {
-  const lines = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6],
-  ]
-  for (let i = 0; i < lines.length; i++) {
-    const [a, b, c] = lines[i]
-    if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-      return board[a]
-    }
-  }
-  return null
-}
+const CROSS = '✖️'
+const ZERO = '᮰'

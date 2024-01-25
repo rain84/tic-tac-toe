@@ -1,2 +1,3 @@
-export * from './button'
+export * from './square'
 export * from './board'
+export * from './history'
